@@ -2,28 +2,28 @@ version: "3.9"
 
 networks:
   lan:
-    name: gitea_lan
+    name: ${container_name}_lan
     driver: bridge
     driver_opts:
-      com.docker.network.bridge.name: GITEA-01
+      com.docker.network.bridge.name: ${bridge_name}
     external: false
     ipam:
       config: 
-        - subnet: "10.65.196.40/29"
-          gateway: "10.65.196.41"
+        - subnet: "${ipv4_subnet}"
+          gateway: "${ipv4_gateway}"
 
 services:
   git_server:
-    image: alemna/gitea
-    container_name: gitea
+    image: ${image_name}
+    container_name: ${container_name}
     build:
       context: .
       dockerfile: DOCKERFILE
       args:
-        comma_seperated_host_list: 10.65.196.42,repos.all.home.arpa
+        comma_seperated_host_list: ${https_hosts}
           # used when generating SSL certificate for HTTPS
-        user_id: 1002
-        group_id: 1002
+        user_id: ${uid}
+        group_id: ${gid}
           # also used for generating SSL certificates. Controls the
           # permissions on the certificate and key files. Make sure it
           # matches the USER_UID and USER_GID values in the 
@@ -31,7 +31,7 @@ services:
     restart: always
     networks:
       lan:
-        ipv4_address: "10.65.196.42"
+        ipv4_address: "${ipv4_address}"
     ports:
       - "80"
       - "443"
@@ -48,14 +48,10 @@ services:
       # ------------------------
       - USER=git
           # the username of the user than runs Gitea within the container.
-      - USER_UID=1002
-          # the user ID of the user that runs Gitea within the container. If
-          # using host volumes (a ./data directory on the host), this must
-          # match the UID of the owner of that ./data.
-      - USER_GID=1002
-          # the group ID of the user that runs Gitea within the container.
-          # If using host volumes (a ./data directory on the host), this
-          # must match the UID of the owner of that ./data.
+      - USER_UID=${uid}
+      - USER_GID=${gid}
+          # the user ID and group ID must match the ownership of the ./_data 
+          # directory.
       # --------------------
       # --- WEB SETTINGS ---
       # --------------------
@@ -68,8 +64,8 @@ services:
           #
           # Anyways. We're using HTTPS, and we're exposing it directly in the
           # 'ports' section below without any mapping, so we use 443.
-      - GITEA__server__HTTP_ADDR=10.65.196.42
-      - GITEA__server__ROOT_URL=http://10.65.196.42:80/
+      - GITEA__server__HTTP_ADDR=${ipv4_address}
+      - GITEA__server__ROOT_URL=http://${ipv4_address}:80/
      # - GITEA__server__ROOT_URL=https://10.65.196.42:443/
           # Change this to https://repos.all.home.arpa:443/ once we get DNS 
           # working.
