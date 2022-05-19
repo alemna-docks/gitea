@@ -8,7 +8,7 @@
 .profile
 .vscode
 
-_data
+_data/*
 !_data/README.md
 
 
