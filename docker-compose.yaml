@@ -1,0 +1,94 @@
+version: "3.9"
+
+networks:
+  lan:
+    name: gitea_lan
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: GITEA-01
+    external: false
+    ipam:
+      config: 
+        - subnet: "10.65.196.40/29"
+          gateway: "10.65.196.41"
+
+services:
+  git_server:
+    image: alemna/gitea
+    container_name: gitea
+    build:
+      context: .
+      dockerfile: DOCKERFILE
+      args:
+        comma_seperated_host_list: 10.65.196.42,repos.all.home.arpa
+          # used when generating SSL certificate for HTTPS
+        user_id: 1002
+        group_id: 1002
+          # also used for generating SSL certificates. Controls the
+          # permissions on the certificate and key files. Make sure it
+          # matches the USER_UID and USER_GID values in the 
+          # 'environment' section.
+    restart: always
+    networks:
+      lan:
+        ipv4_address: "10.65.196.42"
+    ports:
+      - "80"
+      - "443"
+    volumes:
+      - ./_data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      # Note that after the container is built for the first time, Gitea 
+      # doesn't refer to these variables for the configuration. 
+      #
+      # ------------------------
+      # --- GENERAL SETTINGS ---
+      # ------------------------
+      - USER=git
+          # the username of the user than runs Gitea within the container.
+      - USER_UID=1002
+          # the user ID of the user that runs Gitea within the container. If
+          # using host volumes (a ./data directory on the host), this must
+          # match the UID of the owner of that ./data.
+      - USER_GID=1002
+          # the group ID of the user that runs Gitea within the container.
+          # If using host volumes (a ./data directory on the host), this
+          # must match the UID of the owner of that ./data.
+      # --------------------
+      # --- WEB SETTINGS ---
+      # --------------------
+      - GITEA__server__HTTP_PORT=80
+     # - GITEA__server__HTTP_PORT=443
+          # Gitea can only listen on one port at a time. By default, this is
+          # 3000. If we were only using HTTP, we'd traditionally set it to 80
+          # in this config or (more commonly) keep it at 3000 and map it to 
+          # 80 via the 'ports' section in this docker-compose file.
+          #
+          # Anyways. We're using HTTPS, and we're exposing it directly in the
+          # 'ports' section below without any mapping, so we use 443.
+      - GITEA__server__HTTP_ADDR=10.65.196.42
+      - GITEA__server__ROOT_URL=http://10.65.196.42:80/
+     # - GITEA__server__ROOT_URL=https://10.65.196.42:443/
+          # Change this to https://repos.all.home.arpa:443/ once we get DNS 
+          # working.
+      # -----------------
+      # --- FOR HTTPS ---
+      # -----------------
+     # - GITEA__server__PROTOCOL=https
+     # - GITEA__server__CERT_FILE=/ssl/cert.pem
+     # - GITEA__server__KEY_FILE=/ssl/key.pem
+          # we made the /ssl folder in the DOCKERFILE
+     # - GITEA__server__REDIRECT_OTHER_PORT=true
+     # - GITEA__server__PORT_TO_REDIRECT=80  
+    restart: always
+    networks:
+      lan:
+        ipv4_address: "10.65.196.42"
+    ports:
+      - "80"
+    volumes:
+      - ./_data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro

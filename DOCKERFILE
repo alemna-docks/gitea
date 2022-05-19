@@ -1,0 +1,13 @@
+FROM gitea/gitea:1.16
+
+EXPOSE 80 443
+
+ARG user_id
+ARG group_id
+# a comma-seperated list of FQDNs and IP addresses, like:
+#	foo.example.com,foo.bar.example.com,192.0.2.1
+ARG comma_seperated_host_list
+
+RUN mkdir /ssl && cd /ssl && \
+    gitea cert --host $comma_seperated_host_list && \
+    chown --recursive $user_id:$group_id /ssl

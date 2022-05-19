@@ -1,0 +1,13 @@
+.bash_history
+.bash_logout
+.bashrc
+.config
+.gitconfig
+.local
+.profile
+.vscode
+
+_data
+!_data/README.md
+
+
