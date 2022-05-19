@@ -1,0 +1,8 @@
+# Files to ignore when building Docker image. 
+
+# Exclude the _data directory because if it already exists (for
+# example, if we're rebuilding the image) there will be root-owned
+# subdirectories inside _data. This causes Docker to throw a "Error
+# checking context: 'can't stat <somepath>" error.
+# See: https://stackoverflow.com/a/65688428
+_data/*
