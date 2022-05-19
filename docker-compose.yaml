@@ -81,14 +81,4 @@ services:
      # - GITEA__server__KEY_FILE=/ssl/key.pem
           # we made the /ssl folder in the DOCKERFILE
      # - GITEA__server__REDIRECT_OTHER_PORT=true
-     # - GITEA__server__PORT_TO_REDIRECT=80  
-    restart: always
-    networks:
-      lan:
-        ipv4_address: "10.65.196.42"
-    ports:
-      - "80"
-    volumes:
-      - ./_data:/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+     # - GITEA__server__PORT_TO_REDIRECT=80
